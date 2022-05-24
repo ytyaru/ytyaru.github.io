@@ -12,8 +12,9 @@ class WebMention {
         const res = await fetch(`https://webmention.io/api/count?target=${this.target}`)
         let json = await res.json()
         console.log(json)
+        document.getElementById('web-mention-count').textContent = `${json['count']} mensions`
         //json = this.#getTestCount()
-        if (0 < json['count']) { document.getElementById('web-mention-count').textContent = `${json['count']} mensions` }
+        //if (0 < json['count']) { document.getElementById('web-mention-count').textContent = `${json['count']} mensions` }
     }
     #getTestCount() { return {
         "count": 6,
@@ -31,10 +32,11 @@ class WebMention {
         return `<a href="" title="${name}"><img src="${photo}" alt="${name}"></a>`
     }
     #commentTypeA(child) { // コメント、日時、人（アイコン、名前）
-        console.log(child)
         const content = child.content.html || child.content.text
         const diff = this.dateDiff.diff(Date.parse(child.published))
-        return `<div class="mention"><div class="mention-meta"><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32"><span>${child.author.name}<span></a>　<span title="${child.published}">${diff}</span><div>${content}</div></div></div>`
+        return `<div class="mention"><div class="mention-meta"><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32"><span>${child.author.name}<span></a>　<span title="${this.dateDiff.Iso}">${diff}</span><div>${content}</div></div></div>`
+        //return `<div class="mention"><div class="mention-meta"><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32"><span>${child.author.name}<span></a>　<span title="${child.published}">${diff}</span><div>${content}</div></div></div>`
+
         //return `<div class="mention"><div>${content}</div><div class="mention-meta"><div title="${child.published}">${diff}</div><div><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32">${child.author.name}</a></div></div></div></div>`
         //return `<div class="mention"><div>${content}</div><div class="mention-meta"><div title="${child.published}">${diff}</div><div><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32">${child.author.name}</a></div></div></div>`
     }
