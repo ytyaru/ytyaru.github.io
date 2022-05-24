@@ -46,7 +46,7 @@ class WebMention {
         return `<tr><td><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="64" height="64"><br>${child.author.name}</a></td><td><div></div><div>${content}<div>${name}</div><div>${date}</div></div></td></tr>`
     }
     async #comment() {
-        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${this.target}`)
+        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${this.target}&sort-by=published&sort-dir=down&per-page=30&page=0`)
         const json = await res.json()
         console.log(json)
         //json.children = this.#getTestChildren()
