@@ -1,10 +1,11 @@
 window.addEventListener('DOMContentLoaded', async(event) => {
-    console.log('Loaded !!');
-    async function requestWebmention() { // https://ytyaru.github.io/
-        const mention = new WebMention() 
-        await mention.make() 
-    }
-    requestWebmention()
+    try {
+        window.mpurse.updateEmitter.removeAllListeners()
+          .on('stateChanged', isUnlocked => console.log(isUnlocked))
+          .on('addressChanged', address => console.log(address));
+    } catch(e) { console.debug(e) }
+    const mention = new WebMention() 
+    await mention.make() 
     tippy('#web-mention-count', {
         theme: 'custom',
         allowHTML: true,
