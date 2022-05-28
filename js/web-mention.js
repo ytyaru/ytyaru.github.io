@@ -6,12 +6,12 @@ class WebMention {
     async make() {
         this.dateDiff.Base = new Date()
         await this.#count()
-        await this.#comment()
+        await this.#mentions()
     }
     async #count() {
         const res = await fetch(`https://webmention.io/api/count?target=${this.target}`)
         let json = await res.json()
-        console.log(json)
+        console.debug(json)
         document.getElementById('web-mention-count').textContent = `${json['count']} mensions`
         //json = this.#getTestCount()
         //if (0 < json['count']) { document.getElementById('web-mention-count').textContent = `${json['count']} mensions` }
@@ -26,10 +26,26 @@ class WebMention {
             "rsvp-yes": 1
         }
     }}
+    async #mentions() {
+        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${this.target}&sort-by=published&sort-dir=down&per-page=30&page=0`)
+        const mentions = await res.json()
+        console.debug(mentions)
+        await this.#comment(mentions)
+        await this.#like(mentions)
+    }
+    async #comment(mentions) {
+        //mentions.children = this.#getTestChildren()
+        const comments = mentions.children.filter(child=>child.hasOwnProperty('content')).map(child=>this.#commentTypeA(child))
+        document.getElementById('web-mention-comment').innerHTML = comments.join('')
+    }
+    async #like(mentions) { // いいね！　だと思われる。他にも何かあるかも？
+        const likes = mentions.children.filter(child=>child.hasOwnProperty('like-of')).map(child=>this.#author(child.author))
+        // 表示用HMTLを作成する予定
+    }
     #author(author) {
         const name = author.name
         const photo = author.photo || ''
-        return `<a href="" title="${name}"><img src="${photo}" alt="${name}"></a>`
+        return `<a href="${author.url}" title="${author.name}"><img src="${author.photo}" alt="${author.name}"></a>`
     }
     #commentTypeA(child) { // コメント、日時、人（アイコン、名前）
         const content = child.content.html || child.content.text
@@ -44,14 +60,6 @@ class WebMention {
         const content = child.content.html || child.content.text
         const diff = this.dateDiff.diff(Date.parse(child.published))
         return `<tr><td><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="64" height="64"><br>${child.author.name}</a></td><td><div></div><div>${content}<div>${name}</div><div>${date}</div></div></td></tr>`
-    }
-    async #comment() {
-        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${this.target}&sort-by=published&sort-dir=down&per-page=30&page=0`)
-        const json = await res.json()
-        console.log(json)
-        //json.children = this.#getTestChildren()
-        const comments = json.children.map(child=>this.#commentTypeA(child))
-        document.getElementById('web-mention-comment').innerHTML = comments.join('')
     }
     #getTestChildren() {
         return [
