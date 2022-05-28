@@ -12,12 +12,22 @@ class WebMention {
     }
     async #count() {
         const res = await fetch(`https://webmention.io/api/count?target=${this.target}`)
-        let json = await res.json()
-        this.count = json
-        console.debug(json)
-        document.getElementById('web-mention-count').textContent = `${json['count']} mensions`
-        //json = this.#getTestCount()
-        //if (0 < json['count']) { document.getElementById('web-mention-count').textContent = `${json['count']} mensions` }
+        //this.count = this.#getTestCount()
+        this.count = await res.json()
+        console.debug(this.count)
+        document.getElementById('web-mention-count').textContent = `${this.count['count']} mensions`
+        this.#setupTippy()
+    }
+    #setupTippy() {
+        tippy('#web-mention-count', {
+            theme: 'custom',
+            allowHTML: true,
+            interactive: true,
+            trigger: 'click',
+            arrow: false, // 吹き出し矢印の色は変えられなかったので消した
+            placement: 'right',
+            content: `<a href="https://ytyaru.github.io/">ここのURL</a>を書いて<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-text="いいね！" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>すると↓に表示されます。<a href="https://mstdn.jp/">mstdn.jp</a>か<a href="https://pawoo.net/">pawoo</a>でTootしても同じです。`,
+        });
     }
     #getTestCount() { return {
         "count": 6,
@@ -45,13 +55,11 @@ class WebMention {
     }
     async #like() { // ツイートでいう♥いいね！
         const htmls = this.mentions.children.filter(child=>child.hasOwnProperty('like-of')).map(child=>this.#author(child.author))
-        // 表示用HMTLを作成する予定
         const count = (this.count.type.hasOwnProperty('like')) ? this.count.type.like : 0
         document.getElementById('web-mention-hart').innerHTML = `<span title="いいね！">♥${count}</span>${htmls.slice(0,10).join('')}`
     }
-    async #bookmark() { // 
+    async #bookmark() {
         const htmls = this.mentions.children.filter(child=>child.hasOwnProperty('bookmark-of')).map(child=>this.#author(child.author))
-        // 表示用HMTLを作成する予定
         const count = (this.count.type.hasOwnProperty('bookmark')) ? this.count.type.bookmark : 0
         document.getElementById('web-mention-bookmark').innerHTML = `<span title="ブックマーク">🔖${count}</span>${htmls.slice(0,5).join('')}`
     }
@@ -60,19 +68,10 @@ class WebMention {
         const photo = author.photo || ''
         return `<a href="${author.url}" title="${author.name}"><img src="${author.photo}" alt="${author.name}" width="${size}" height="${size}"></a>`
     }
-    #commentTypeA(child) { // コメント、日時、人（アイコン、名前）
+    #commentTypeA(child) { // 人、日時、コメント（サーバが返すpublished日時テキストが不統一で正しくISO8601でないからバグる！）
         const content = child.content.html || child.content.text
         const diff = this.dateDiff.diff(Date.parse(child.published))
-        return `<div class="mention"><div class="mention-meta"><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32"><span>${child.author.name}<span></a>　<span title="${this.dateDiff.Iso}">${diff}</span><div>${content}</div></div></div>`
-        //return `<div class="mention"><div class="mention-meta"><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32"><span>${child.author.name}<span></a>　<span title="${child.published}">${diff}</span><div>${content}</div></div></div>`
-
-        //return `<div class="mention"><div>${content}</div><div class="mention-meta"><div title="${child.published}">${diff}</div><div><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32">${child.author.name}</a></div></div></div></div>`
-        //return `<div class="mention"><div>${content}</div><div class="mention-meta"><div title="${child.published}">${diff}</div><div><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="32" height="32">${child.author.name}</a></div></div></div>`
-    }
-    #commentTypeB(child) { // 人、コメント、日時
-        const content = child.content.html || child.content.text
-        const diff = this.dateDiff.diff(Date.parse(child.published))
-        return `<tr><td><a href="${child.author.url}"><img src="${child.author.photo}" alt="${child.author.name}" width="64" height="64"><br>${child.author.name}</a></td><td><div></div><div>${content}<div>${name}</div><div>${date}</div></div></td></tr>`
+        return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${this.dateDiff.Iso}">${diff}</span></div><div>${content}</div></div>`
     }
     #getTestChildren() {
         return [
