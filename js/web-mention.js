@@ -2,6 +2,8 @@ class WebMention {
     constructor() {
         this.dateDiff = new DateDiff()
         this.target = `https://ytyaru.github.io/`
+        this.count = null
+        this.mentions = null
     }
     async make() {
         this.dateDiff.Base = new Date()
@@ -11,6 +13,7 @@ class WebMention {
     async #count() {
         const res = await fetch(`https://webmention.io/api/count?target=${this.target}`)
         let json = await res.json()
+        this.count = json
         console.debug(json)
         document.getElementById('web-mention-count').textContent = `${json['count']} mensions`
         //json = this.#getTestCount()
@@ -29,23 +32,33 @@ class WebMention {
     async #mentions() {
         const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${this.target}&sort-by=published&sort-dir=down&per-page=30&page=0`)
         const mentions = await res.json()
+        this.mentions = mentions
         console.debug(mentions)
-        await this.#comment(mentions)
-        await this.#like(mentions)
+        await this.#comment()
+        await this.#like()
+        await this.#bookmark()
     }
-    async #comment(mentions) {
+    async #comment() {
         //mentions.children = this.#getTestChildren()
-        const comments = mentions.children.filter(child=>child.hasOwnProperty('content')).map(child=>this.#commentTypeA(child))
+        const comments = this.mentions.children.filter(child=>child.hasOwnProperty('content')).map(child=>this.#commentTypeA(child))
         document.getElementById('web-mention-comment').innerHTML = comments.join('')
     }
-    async #like(mentions) { // いいね！　だと思われる。他にも何かあるかも？
-        const likes = mentions.children.filter(child=>child.hasOwnProperty('like-of')).map(child=>this.#author(child.author))
+    async #like() { // ツイートでいう♥いいね！
+        const htmls = this.mentions.children.filter(child=>child.hasOwnProperty('like-of')).map(child=>this.#author(child.author))
         // 表示用HMTLを作成する予定
+        const count = (this.count.type.hasOwnProperty('like')) ? this.count.type.like : 0
+        document.getElementById('web-mention-hart').innerHTML = `<span title="いいね！">♥${count}</span>${htmls.slice(0,10).join('')}`
     }
-    #author(author) {
+    async #bookmark() { // 
+        const htmls = this.mentions.children.filter(child=>child.hasOwnProperty('bookmark-of')).map(child=>this.#author(child.author))
+        // 表示用HMTLを作成する予定
+        const count = (this.count.type.hasOwnProperty('bookmark')) ? this.count.type.bookmark : 0
+        document.getElementById('web-mention-bookmark').innerHTML = `<span title="ブックマーク">🔖${count}</span>${htmls.slice(0,5).join('')}`
+    }
+    #author(author, size=32) {
         const name = author.name
         const photo = author.photo || ''
-        return `<a href="${author.url}" title="${author.name}"><img src="${author.photo}" alt="${author.name}"></a>`
+        return `<a href="${author.url}" title="${author.name}"><img src="${author.photo}" alt="${author.name}" width="${size}" height="${size}"></a>`
     }
     #commentTypeA(child) { // コメント、日時、人（アイコン、名前）
         const content = child.content.html || child.content.text
