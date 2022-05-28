@@ -1,9 +1,30 @@
+class DateDiff { // 〜時間前のような表記を生成する
+    constructor() { this.base = Date.now(); this.elapsed = null; this.iso = null; this.target = null;}
+    get Base() { return this.base }
+    set Base(d) { if (d instanceof Date) { this.base = d } }
+    get Elapsed() { return this.elapsed }
+    get Iso() { return this.iso }
+    diff (target) { // target: epochTime(Date.parse(`ISO8601`)の返り値)
+        this.target = new Date(target)
+        this.target.setHours(this.target.getHours() + 9)
+        const diff = this.base.getTime() - this.target.getTime() // UTCから日本時間に合わせる
+        this.elapsed = new Date(diff);
+        this.iso = `${this.target.getFullYear()}-${(this.target.getMonth()+1).toString().padStart(2, '0')}-${this.target.getDate().toString().padStart(2, '0')} ${this.target.getHours().toString().padStart(2, '0')}:${this.target.getMinutes().toString().padStart(2, '0')}:${this.target.getSeconds().toString().padStart(2, '0')}`
+        if (this.elapsed.getUTCFullYear() - 1970) { return this.elapsed.getUTCFullYear() - 1970 + '年前' }
+        else if (this.elapsed.getUTCMonth()) { return this.elapsed.getUTCMonth() + 'ヶ月前' }
+        else if (this.elapsed.getUTCDate() - 1) { return this.elapsed.getUTCDate() - 1 + '日前' }
+        else if (this.elapsed.getUTCHours()) { return this.elapsed.getUTCHours() + '時間前' }
+        else if (this.elapsed.getUTCMinutes()) { return this.elapsed.getUTCMinutes() + '分前' }
+        else { return this.elapsed.getUTCSeconds() + '秒前' }
+    }
+}
 class WebMention {
-    constructor() {
+    constructor(per=30) {
         this.dateDiff = new DateDiff()
-        this.target = `https://ytyaru.github.io/`
+        this.target = location.href
         this.count = null
         this.mentions = null
+        this.per = per
     }
     async make() {
         this.dateDiff.Base = new Date()
@@ -40,7 +61,7 @@ class WebMention {
         }
     }}
     async #mentions() {
-        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${this.target}&sort-by=published&sort-dir=down&per-page=30&page=0`)
+        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${this.target}&sort-by=published&sort-dir=down&per-page=${this.per}&page=0`)
         const mentions = await res.json()
         this.mentions = mentions
         console.debug(mentions)
@@ -94,27 +115,7 @@ class WebMention {
               "mention-of": "https://indieweb.org/",
               "wm-property": "mention-of",
               "wm-private": false
-            }, 
-            {
-              "type": "entry",
-              "author": {
-                "type": "card",
-                "name": "名前ですよ",
-                "url": "http://tantek.com/",
-                "photo": "http://tantek.com/logo.jpg"
-              },
-              "url": "http://tantek.com/2013/112/t2/milestone-show-indieweb-comments-h-entry-pingback",
-              "published": "2013-04-22T15:03:00-07:00",
-              "wm-received": "2013-04-25T17:09:33-07:00",
-              "wm-id": 900,
-              "content": {
-                "text": "ああああああああああああああああ",
-                "html": "ああああああああああああああああiiiiiiiiiii"
-              },
-              "mention-of": "https://indieweb.org/",
-              "wm-property": "mention-of",
-              "wm-private": false
-            }
+            },
         ]
     }
 }
