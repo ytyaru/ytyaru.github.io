@@ -143,7 +143,7 @@ class WebMention {
     }
     #commentTypeA(child) { // 人、日時、コメント（サーバが返すpublished日時テキストが不統一で正しくISO8601でないからバグる！）
         const content = child.content.html || child.content.text
-        return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${child.publishedYmdhms}">${child.publishedElapsed}</span></div><div>${content}</div></div>`
+        return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${child.publishedYmdhms}">${child.publishedElapsed}</span>　<span><a href="${child.url}" class="mention-url">🔗</a></div><div>${content}</div></div>`
         //const diff = this.dateDiff.diff(Date.parse(child.published))
         //return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${this.dateDiff.Iso}">${diff}</span></div><div>${content}</div></div>`
     }

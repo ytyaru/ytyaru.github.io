@@ -96,6 +96,7 @@ a { color: #ff0; }
 .mention-meta a, .mention-meta img, .mention-meta span {
     vertical-align: middle;
 }
+.mention-url { text-decoration: none; }
 /*
 .mention-meta { float:left; }
 */
