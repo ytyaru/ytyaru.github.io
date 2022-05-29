@@ -41,7 +41,6 @@ class BugIsoEscape { // webmentionのJSON応答値にあるpublishedの日時テ
     }
     #mstdnjp(published) { // "2022-05-24T02:49:03"のような値が返ってきた。これはUTC標準時だが末尾にZがついていない
         console.log(this.timezone)
-        //if (this.timezone.match(published)) { return published } // 将来マストドンが正しく修正したとき用
         if (published.match(this.timezone)) { return published } // 将来マストドンが正しく修正したとき用
         if (published.endsWith('Z')) { return published }        // 将来マストドンが正しく修正したとき用
         if (!published.endsWith('Z')) { return published + 'Z' } // 今回はこれだけで大丈夫
