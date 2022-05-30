@@ -22,6 +22,8 @@
 <link rel="icon" href="./asset/image/avator.png">
 <link rel="stylesheet" href="./css/styles.css">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./lib/tingle/0.16.0/tingle.js"></script>
+<link rel="stylesheet" href="./lib/tingle/0.16.0/tingle.css">
 <script src="./js/web-mention.js"></script>
 <script src="./js/main.js"></script>
 <script type="application/ld+json">
@@ -110,8 +112,32 @@
 
 <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-text="いいね！" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
+<!--
 <span id="web-mention-count"></span><span id="web-mention-hart"></span><span id="web-mention-bookmark"></span>
 <div id="web-mention-comment"></div>
+-->
+<div id="web-mention-counts">
+    <span id="web-mention-count"></span>
+    <div id="web-mention-like" title="いいね！">
+        <span id="web-mention-like-icon">♥</span>
+        <span id="web-mention-like-count">0</span>
+        <span id="web-mention-like-author"></span>
+    </div>
+    <div id="web-mention-bookmark" title="ブックマーク">
+        <span id="web-mention-bookmark-icon">🔖</span>
+        <span id="web-mention-bookmark-count">0</span>
+        <span id="web-mention-bookmark-author"></span>
+    </div>
+    <div id="web-mention-rsvp" title="出欠確認">
+        <span id="web-mention-rsvp-icon">📅</span>
+        <span id="web-mention-rsvp-count">0</span>
+        <span id="web-mention-rsvp-author"></span>
+    </div>
+</div>
+
+<span id="web-mention-count"></span><span id="web-mention-hart"></span><span id="web-mention-bookmark"></span>
+<div id="web-mention-comment"></div>
+
 </div>
 
 <div id="content-right">

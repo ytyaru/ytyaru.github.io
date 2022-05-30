@@ -80,6 +80,10 @@ a { color: #ff0; }
     cursor: pointer;
     text-decoration: underline dotted;
 }
+#web-mention-counts, #web-mention-like, #web-mention-bookmark, #web-mention-rsvp {
+    cursor: pointer;
+    display: inline;
+}
 #web-mention-comment {
     height: 300px;
     overflow-y: scroll;

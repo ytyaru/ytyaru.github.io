@@ -40,7 +40,6 @@ class BugIsoEscape { // webmentionのJSON応答値にあるpublishedの日時テ
         return child.published
     }
     #mstdnjp(published) { // "2022-05-24T02:49:03"のような値が返ってきた。これはUTC標準時だが末尾にZがついていない
-        console.log(this.timezone)
         if (published.match(this.timezone)) { return published } // 将来マストドンが正しく修正したとき用
         if (published.endsWith('Z')) { return published }        // 将来マストドンが正しく修正したとき用
         if (!published.endsWith('Z')) { return published + 'Z' } // 今回はこれだけで大丈夫
@@ -64,15 +63,20 @@ class WebMention {
     constructor(per=30) {
         this.dateDiff = new DateDiff()
         this.target = location.href
+        //this.target = `https://ytyaru.github.io/` // デバッグ用
         this.count = null
-        this.mentions = null
         this.per = per
+        //this.per = 3 // デバッグ用
+        this.page = 0
         this.bugIso = new BugIsoEscape()
+        this.API_URL = 'https://webmention.io/api/mentions.jf2'
     }
     async make() {
         this.dateDiff.Base = new Date()
         await this.#count()
         await this.#mentions()
+        this.#addPaginateCommentEventListener()
+        this.#addLikeBookmarkRsvpClickEventListener()
     }
     async #count() {
         const res = await fetch(`https://webmention.io/api/count?target=${this.target}`)
@@ -90,62 +94,198 @@ class WebMention {
             trigger: 'click',
             arrow: false, // 吹き出し矢印の色は変えられなかったので消した
             placement: 'right',
-            content: `<a href="https://ytyaru.github.io/">ここのURL</a>を書いて<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-text="いいね！" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>すると↓に表示されます。<a href="https://mstdn.jp/">mstdn.jp</a>か<a href="https://pawoo.net/">pawoo</a>でTootしても同じです。`,
+            content: `<a href="https://ytyaru.github.io/">ここのURL</a>を書いて<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-text="いいね！" data-show-count="false" target="_blank" rel="noopener noreferrer">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>すると↓に表示されます。<a href="https://mstdn.jp/" target="_blank" rel="noopener noreferrer">mstdn.jp</a>か<a href="https://pawoo.net/" target="_blank" rel="noopener noreferrer">pawoo</a>でTootしても同じです。`,
         });
     }
     #getTestCount() { return {
-        "count": 6,
+        "count": 10,
         "type": {
+            "invite": 1,
+            "like": 1,
             "bookmark": 1,
-            "mention": 2,
+            "mention": 1,
+            "reply": 1,
+            "repost": 1,
+            "rsvp-yes": 1,
             "rsvp-maybe": 1,
+            "rsvp-interested": 1,
             "rsvp-no": 1,
-            "rsvp-yes": 1
         }
     }}
     async #mentions() {
-        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${this.target}&sort-by=published&sort-dir=down&per-page=${this.per}&page=0`)
-        const mentions = await res.json()
-        this.#bugIso(mentions)
-        console.debug(this.mentions)
-        await this.#comment()
-        await this.#like()
-        await this.#bookmark()
+        this.#likeBookmarkRsvp()
+        this.#comment()
     }
     #bugIso(mentions) { // // サーバ側が返す不正ISO8601を強制修正し、それに沿ってソートし直す
-        this.mentions = mentions
-        for (let i=0; i<this.mentions.children.length; i++) { // サーバ側が返す不正ISO8601を強制修正する
-            this.bugIso.escape(this.mentions.children[i])
+        for (let i=0; i<mentions.children.length; i++) { // サーバ側が返す不正ISO8601を強制修正する
+            this.bugIso.escape(mentions.children[i])
         }
         // 日付順に降順ソート（サーバ側のISO8601が不正値なのに、それを基準にしてwebmentionAPIでsort-by,sort-dirしている。それはまちがっているため、正しいISO8601形式に強制修正したのち、再度ソートをかけることで正しい日時と順序になる）
-        const children = this.mentions.children.sort(function(a, b) { return (a.date > b.date) ? -1 : 1; });
-        this.mentions.children = children
+        return mentions.children.sort(function(a, b) { return (a.date > b.date) ? -1 : 1; });
+    }
+    #getRequestUrl(perPage=20, page=0) {
+        const url = new URL(this.API_URL)
+        url.searchParams.set('target', this.target);
+        url.searchParams.set('sort-by', 'published');
+        url.searchParams.set('sort-dir', 'down');
+        url.searchParams.set('per-page', perPage || this.per);
+        url.searchParams.set('page', page || this.page);
+        return url
+    }
+    async #request(url) {
+        const res = await fetch(url)
+        const mentions = await res.json()
+        const children = this.#bugIso(mentions)
+        mentions.children = children
+        return mentions
     }
     async #comment() {
-        //mentions.children = this.#getTestChildren()
-        const comments = this.mentions.children.filter(child=>child.hasOwnProperty('content')).map(child=>this.#commentTypeA(child))
-        document.getElementById('web-mention-comment').innerHTML = comments.join('')
+        // 複数のwm-property[]を指定しても、なぜか最後に指定したwm-property[]の種類しか取得できなかった。APIのバグ？
+        // https://github.com/aaronpk/webmention.io#api
+        /*
+        const url = this.#getRequestUrl(this.per, this.page)
+        url.searchParams.set('wm-property[]', 'in-reply-to');
+        url.searchParams.set('wm-property[]', 'mention-of');
+        url.searchParams.set('wm-property[]', 'repost-of');
+        console.debug(url.searchParams)
+        console.debug(url)
+        const mentions = await this.#request(url)
+        console.debug(mentions)
+        */
+        const url = this.#getRequestUrl(this.per, this.page)
+        console.debug(url)
+        const mentions = await this.#request(url)
+        console.debug(mentions)
+        document.getElementById('web-mention-comment').innerHTML += mentions.children.filter(child=>child.hasOwnProperty('content')).map(child=>this.#commentTypeA(child)).join('')
     }
-    async #like() { // ツイートでいう♥いいね！
-        const htmls = this.mentions.children.filter(child=>child.hasOwnProperty('like-of')).map(child=>this.#author(child.author))
-        const count = (this.count.type.hasOwnProperty('like')) ? this.count.type.like : 0
-        document.getElementById('web-mention-hart').innerHTML = `<span title="いいね！">♥${count}</span>${htmls.slice(0,10).join('')}`
+    async #likeBookmarkRsvp() {
+        const data = new Map()
+        data.set('like', {per:10, wmProperty:'like-of'})
+        data.set('bookmark', {per:5, wmProperty:'bookmark-of'})
+        data.set('rsvp', {per:5, wmProperty:'rsvp'})
+        for (const [key,value] of data.entries()) {
+            this.#notHasContents(value.per, value.wmProperty, key)
+        }
     }
-    async #bookmark() {
-        const htmls = this.mentions.children.filter(child=>child.hasOwnProperty('bookmark-of')).map(child=>this.#author(child.author))
-        const count = (this.count.type.hasOwnProperty('bookmark')) ? this.count.type.bookmark : 0
-        document.getElementById('web-mention-bookmark').innerHTML = `<span title="ブックマーク">🔖${count}</span>${htmls.slice(0,5).join('')}`
+    async #notHasContents(per, wmProperty, id) {
+        const url = this.#getRequestUrl(per, 0)
+        url.searchParams.set('wm-property', wmProperty);
+        const mentions = await this.#request(url)
+        document.getElementById(`web-mention-${id}-count`).innerHTML = (this.count.type.hasOwnProperty(id)) ? this.count.type[id] : 0
+        document.getElementById(`web-mention-${id}-author`).innerHTML += mentions.children.map(child=>this.#author(child.author)).join('')
     }
     #author(author, size=32) {
         const name = author.name
         const photo = author.photo || ''
-        return `<a href="${author.url}" title="${author.name}"><img src="${author.photo}" alt="${author.name}" width="${size}" height="${size}"></a>`
+        return `<a href="${author.url}" title="${author.name}" target="_blank" rel="noopener noreferrer"><img src="${author.photo}" alt="${author.name}" width="${size}" height="${size}"></a>`
     }
     #commentTypeA(child) { // 人、日時、コメント（サーバが返すpublished日時テキストが不統一で正しくISO8601でないからバグる！）
         const content = child.content.html || child.content.text
-        return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${child.publishedYmdhms}">${child.publishedElapsed}</span>　<span><a href="${child.url}" class="mention-url">🔗</a></div><div>${content}</div></div>`
-        //const diff = this.dateDiff.diff(Date.parse(child.published))
-        //return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${this.dateDiff.Iso}">${diff}</span></div><div>${content}</div></div>`
+        return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${child.publishedYmdhms}">${child.publishedElapsed}</span>　<span title="${this.#getMentionTypeName(child)}" class="mention-url"><a href="${child.url}" target="_blank" rel="noopener noreferrer" class="mention-url">${this.#getMentionTypeEmoji(child)}</a></span></div><div>${content}</div></div>`
+    }
+    #getMentionTypeEmoji(child) {
+        switch(child['wm-property']) {
+            case 'like-of': return '♥'
+            case 'bookmark-of': return '🔖'
+            case 'rsvp': return '📅'
+            case 'in-reply-to': return '↪'
+            case 'repost-of': return '🔃'
+            case 'mention-of': return '＠'
+            default: throw new Error(`想定外の値です。: ${child.wm-property}`)// 
+        }
+    }
+    #getMentionTypeName(child) {
+        switch(child['wm-property']) {
+            case 'like-of': return 'いいね！'
+            case 'bookmark-of': return 'ブックマーク'
+            case 'rsvp': return '出欠確認'
+            case 'in-reply-to': return '返信'
+            case 'repost-of': return '拡散'
+            case 'mention-of': return '言及'
+            default: throw new Error(`想定外の値です。: ${child.wm-property}`)// 
+        }
+    }
+    #addPaginateCommentEventListener() {
+        const allHeight = Math.max(
+            document.body.scrollHeight, document.documentElement.scrollHeight,
+            document.body.offsetHeight, document.documentElement.offsetHeight,
+            document.body.clientHeight, document.documentElement.clientHeight
+        );
+        const mostBottom = allHeight - window.innerHeight;
+        const dom = document.getElementById('web-mention-comment')
+        dom.addEventListener('scroll', async()=> {
+            const commentsHeight = dom.scrollHeight - dom.clientHeight
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (commentsHeight <= dom.scrollTop) { // 最下端までスクロールした
+                console.debug(dom.scrollTop, commentsHeight, '最下端までスクロールした')
+                if ((this.per * (this.page+1)) < this.count.count) { console.debug('追加リクエスト'); this.page++; await this.#comment() }
+            }
+        });
+    }
+    #addLikeBookmarkRsvpClickEventListener() {
+        this.#addNotHasContentTypeClickEventListener('like', 10)
+        this.#addNotHasContentTypeClickEventListener('bookmark', 5)
+        this.#addNotHasContentTypeClickEventListener('rsvp', 5)
+    }
+    #addNotHasContentTypeClickEventListener(type='like', initCount=10) {
+        const self = this
+        const dom = document.getElementById(`web-mention-${type}`)
+        dom.addEventListener('click', async()=> {
+            console.debug(type, initCount)
+            const modal = new tingle.modal({
+                stickyFooter: false,
+                closeMethods: ['overlay', 'button', 'escape'],
+                closeLabel: "Close",
+                cssClass: ['custom-class-1', 'custom-class-2'],
+                onOpen: function() { console.debug('modal open'); },
+                onClose: function() { console.debug('modal closed'); },
+            });
+            let author = document.getElementById(`web-mention-${type}-author`).innerHTML
+
+            let rsvpDom = null
+            if ('rsvp' === type) { rsvpDom = self.#makeRsvpDialogInnerHtml() }
+            // 残り取得
+            if (self.count.type.hasOwnProperty(`${type}`)) {
+                if (initCount < self.count.type.like) {
+                    const perPage = 100
+                    for (let page=0; self.count.type.like<((page+1)*perPage); page++) {
+                        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${self.target}&sort-by=published&sort-dir=down&per-page=${perPage}&page=${page}&wm-property=like-of`)
+                        const mentions = await res.json()
+                        const children = self.#bugIso(mentions)
+                        if ('rsvp' === type) { self.#makeRsvpAuthor(rsvpDom, child) }
+                        else {
+                            if (0 === page) { author += children.slice(initCount).map(child=>self.#author(child.author)) }
+                            else { author += children.map(child=>self.#author(child.author)) }
+                        }
+                    }
+                }
+            }
+            const icon = document.getElementById(`web-mention-${type}-icon`)
+            const count = document.getElementById(`web-mention-${type}-count`)
+            modal.setContent(icon.innerHTML + count.innerHTML + author);
+            modal.open();
+        });
+    }
+    #makeRsvpDialogInnerHtml() {
+        const dom = document.createElement(`div`)
+        const icons = new Map()
+        icons.set('yes', '参加する')
+        icons.set('maybe', 'たぶん参加する')
+        icons.set('interested', '興味はある')
+        icons.set('no', '参加しない')
+        icons.set('other', '他')
+        for (const value of icons.keys()) {
+            if (this.count.type.hasOwnProperty(value) || 'other' === value) {
+                dom.innerHTML += `<div id="web-mention-rsvp-${value}"><span id="web-mention-rsvp-${value}-icon">${icons.get(value)}</span><span id="web-mention-rsvp-${value}-count">${this.count}</span><span id="web-mention-rsvp-${value}-author"></span></div>`
+            }
+        }
+        return dom
+    }
+    #makeRsvpAuthor(dom, child) {
+        const rsvp = child.rsvp.toLowerCase()
+        const target = dom.getElementById(`web-mention-rsvp-${rsvp}-author`)
+        if (!target) { target = document.getElementById(`web-mention-rsvp-other-author`) }
+        target.innerHTML += this.#author(child.author)
     }
     #getTestChildren() {
         return [
