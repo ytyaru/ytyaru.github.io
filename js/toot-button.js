@@ -284,7 +284,7 @@ button:focus, button:focus img {
         } else {
             console.debug('既存のトークンがないか無効のため、新しいアクセストークンを発行します。');
             const app = await tooter.createApp().catch(e=>alert(e))
-            this.#errorApi(res)
+            this.#errorApi(app)
             console.debug(app.client_id)
             console.debug(app.client_secret)
             console.debug(sessionStorage.getItem(`${domain}-app`))
