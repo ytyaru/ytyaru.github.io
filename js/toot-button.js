@@ -142,19 +142,31 @@ button:focus, button:focus img {
             console.debug('認証コード', code)
             // client_id, client_secretはsessionStorageに保存しておく必要がある
             const json = await tooter.getToken(sessionStorage.getItem(`${domain}-client_id`), sessionStorage.getItem(`${domain}-client_secret`), code)
-            console.debug(json)
+            this.#errorApi(json)
             console.debug('access_token:', json.access_token)
             sessionStorage.setItem(`${domain}-access_token`, json.access_token);
             const accessToken = json.access_token
             const v = await tooter.verify(accessToken)
             console.debug(v)
             const res = await tooter.toot(accessToken, status)
-            console.debug(res)
+            this.#errorApi(res)
             sessionStorage.removeItem(`status`)
             //this.classList.remove('jump');
             //this.classList.remove('flip');
             this.#tootEvent(res)
             console.debug('----- 以上 -----')
+        }
+    }
+    #errorApi(json) {
+        console.debug(json)
+        if (json.hasOwnProperty('error')) {
+            this.#toast(json.error, true)
+            //sessionStorage.removeItem(`${domain}-app`, JSON.stringify(app));
+            sessionStorage.removeItem(`${domain}-client_id`, app.client_id);
+            sessionStorage.removeItem(`${domain}-client_secret`, app.client_secret);
+            //sessionStorage.removeItem(`status`);
+            sessionStorage.removeItem(`${domain}-access_token`, json.access_token);
+            throw new Error(`マストドンAPIでエラーがありました。詳細はデバッグログやsessionStorageを参照してください。: ${JSON.stringify(json)}`)
         }
     }
     #tootEvent(json) { 
@@ -272,11 +284,13 @@ button:focus, button:focus img {
         } else {
             console.debug('既存のトークンがないか無効のため、新しいアクセストークンを発行します。');
             const app = await tooter.createApp().catch(e=>alert(e))
-            console.debug(app)
+            this.#errorApi(res)
             console.debug(app.client_id)
             console.debug(app.client_secret)
+            console.debug(sessionStorage.getItem(`${domain}-app`))
             console.debug(sessionStorage.getItem(`${domain}-client_id`))
             console.debug(sessionStorage.getItem(`${domain}-client_secret`))
+            sessionStorage.setItem(`${domain}-app`, JSON.stringify(app));
             sessionStorage.setItem(`${domain}-client_id`, app.client_id);
             sessionStorage.setItem(`${domain}-client_secret`, app.client_secret);
             const status = document.getElementById('status')
@@ -287,14 +301,13 @@ button:focus, button:focus img {
         }
     }
     #toast(message, error=false) {
+        console.debug(message)
         const options = {
             text: message, 
             position:'center'
         }
         if (error) { options.style = { background: "red" } }
-        console.debug(message)
         if (Toastify) { Toastify(options).showToast(); }
-        //if (Toastify) { Toastify({text: message, position:'center'}).showToast(); }
         else { alert(message) }
     }
 }

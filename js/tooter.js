@@ -4,8 +4,8 @@ class Tooter {
         url.searchParams.delete('code');
         this.redirect_uri = url.href
         this.domain = domain
-        this.scope = 'read write follow push'
-        //this.scope = 'write:statuses'
+        //this.scope = 'read write follow push'
+        this.scope = 'write:statuses'
     }
     getDefaultJsonHeaders() { return {
         'Accept': 'application/json',
@@ -48,18 +48,25 @@ class Tooter {
     async createApp() {
         console.debug('----- apps -----')
         const params = {
-            client_name: `Test Application by API redirect_uris=${this.redirect_uri}`,
+            client_name: this.#createClientName(),
             redirect_uris: `${this.redirect_uri}`,
             scopes: this.scope,
             website: `${this.redirect_uri}`,
         };
         return await this.post('api/v1/apps', null, params)
     }
+    #createClientName() {
+        // mstdn.jp では60字以下でないとエラーになる
+        //    client_name: `Test Application by API redirect_uris=${this.redirect_uri}`,
+        // {"error":"Validation failed: Application name is too long (maximum is 60 characters)"}
+        return `toot requester`
+    }
     authorize(client_id) {
         console.debug('----- authorize -----')
-        const scope='read+write+follow+push'
+        //const scope='read+write+follow+push'
         const redirect_uri = this.redirect_uri + `?domain=${this.domain}`
-        const url = new URL(`https://${this.domain}/oauth/authorize?client_id=${client_id}&scope=${scope}&redirect_uri=${redirect_uri}&response_type=code`).href
+        //const url = new URL(`https://${this.domain}/oauth/authorize?client_id=${client_id}&scope=${scope}&redirect_uri=${redirect_uri}&response_type=code`).href
+        const url = new URL(`https://${this.domain}/oauth/authorize?response_type=code&client_id=${client_id}&scope=${this.scope}&redirect_uri=${redirect_uri}`).href
         console.debug(url)
         window.location.href = url
     }
