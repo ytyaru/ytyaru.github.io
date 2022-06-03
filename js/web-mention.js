@@ -4,6 +4,17 @@ class DateDiff { // 〜時間前のような表記を生成する
     set Base(d) { if (d instanceof Date) { this.base = d } }
     get Elapsed() { return this.elapsed }
     get Iso() { return this.iso }
+    static toIso(d) { return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}` }
+    static toElapsed(d) {
+        const diff = new Date().getTime() - d.getTime() // 現在時刻からの差分
+        const elapsed = new Date(diff);
+        if (elapsed.getUTCFullYear() - 1970) { return elapsed.getUTCFullYear() - 1970 + '年前' }
+        else if (elapsed.getUTCMonth()) { return elapsed.getUTCMonth() + 'ヶ月前' }
+        else if (elapsed.getUTCDate() - 1) { return elapsed.getUTCDate() - 1 + '日前' }
+        else if (elapsed.getUTCHours()) { return elapsed.getUTCHours() + '時間前' }
+        else if (elapsed.getUTCMinutes()) { return elapsed.getUTCMinutes() + '分前' }
+        else { return (elapsed.getUTCSeconds() < 1) ? 'たった今' : elapsed.getUTCSeconds() + '秒前' }
+    }
     diff (target) { // target: DateまたはepochTime(Date.parse(`ISO8601`)の返り値)
         if (target instanceof Date) { this.target = target }
         else if (Number.isInteger(target)) { this.target = new Date(target) }
