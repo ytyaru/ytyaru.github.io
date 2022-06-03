@@ -5,7 +5,7 @@ class Tooter {
         this.redirect_uri = url.href
         this.domain = domain
         this.scope = 'read write follow push'
-        this.scope = 'write:statuses'
+        //this.scope = 'write:statuses'
     }
     getDefaultJsonHeaders() { return {
         'Accept': 'application/json',
