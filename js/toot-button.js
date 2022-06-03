@@ -84,10 +84,12 @@ button {
   width: ${this.imgSize}px;
   height: ${this.imgSize}px;
 }
+/* アニメが完了するまでクリックできなくなる
 button:focus {
   transform-origin: 50% 50%;
   animation: flip .20s linear alternate;
 }
+*/
 button, button img {
   width: ${this.imgSize}px;
   height: ${this.imgSize}px;
