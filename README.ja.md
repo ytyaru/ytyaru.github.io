@@ -6,11 +6,7 @@
 
 # デモ
 
-* [デモ](https://ytyaru.github.io/Html.ytyaru.github.io.20220523093543/)
-
-# 特徴
-
-* セールスポイント
+* [デモ](https://ytyaru.github.io/)
 
 # 開発環境
 
@@ -24,26 +20,11 @@ $ uname -a
 Linux raspberrypi 5.10.63-v7l+ #1496 SMP Wed Dec 1 15:58:56 GMT 2021 armv7l GNU/Linux
 ```
 
-# インストール
-
-```sh
-git clone https://github.com/ytyaru/Html.ytyaru.github.io.20220523093543
-```
-
-# 使い方
-
-```sh
-cd Html.ytyaru.github.io.20220523093543/src
-./run.sh
-```
-
-# 注意
-
-* 注意点など
-
 # 著者
 
-　ytyaru
+　[ytyaru][]
+
+[ytyaru]:https://ytyaru.github.io/)
 
 * [![github](http://www.google.com/s2/favicons?domain=github.com)](https://github.com/ytyaru "github")
 * [![hatena](http://www.google.com/s2/favicons?domain=www.hatena.ne.jp)](http://ytyaru.hatenablog.com/ytyaru "hatena")

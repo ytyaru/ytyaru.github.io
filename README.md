@@ -6,11 +6,7 @@ This is the ytyaru website.
 
 # DEMO
 
-* [DEMO](https://ytyaru.github.io/Html.ytyaru.github.io.20220523093543/)
-
-# Features
-
-* sales point
+* [DEMO](https://ytyaru.github.io/)
 
 # Requirement
 
@@ -24,26 +20,11 @@ $ uname -a
 Linux raspberrypi 5.10.63-v7l+ #1496 SMP Wed Dec 1 15:58:56 GMT 2021 armv7l GNU/Linux
 ```
 
-# Installation
-
-```sh
-git clone https://github.com/ytyaru/Html.ytyaru.github.io.20220523093543
-```
-
-# Usage
-
-```sh
-cd Html.ytyaru.github.io.20220523093543/src
-./run.sh
-```
-
-# Note
-
-* important point
-
 # Author
 
-ytyaru
+[ytyaru][]
+
+[ytyaru]:https://ytyaru.github.io/)
 
 * [![github](http://www.google.com/s2/favicons?domain=github.com)](https://github.com/ytyaru "github")
 * [![hatena](http://www.google.com/s2/favicons?domain=www.hatena.ne.jp)](http://ytyaru.hatenablog.com/ytyaru "hatena")
@@ -53,6 +34,4 @@ ytyaru
 # License
 
 This software is CC0 licensed.
-
-[![CC0](http://i.creativecommons.org/p/zero/1.0/88x31.png "CC0")](http://creativecommons.org/publicdomain/zero/1.0/deed.en)
 
