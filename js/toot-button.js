@@ -150,8 +150,10 @@ button:focus, button:focus img {
             const accessToken = json.access_token
             const v = await tooter.verify(accessToken)
             console.debug(v)
+            this.#errorApi(v)
             const res = await tooter.toot(accessToken, status)
             this.#errorApi(res)
+            this.#requestWebmention(res)
             sessionStorage.removeItem(`status`)
             //this.classList.remove('jump');
             //this.classList.remove('flip');
@@ -280,6 +282,8 @@ button:focus, button:focus img {
             console.debug('既存のトークンが有効なため即座にトゥートします。');
             //const res = await tooter.toot(access_token, this.status)
             const res = await tooter.toot(access_token, this.#getStatus())
+            this.#errorApi(res)
+            this.#requestWebmention(res)
             //event.target.classList.remove('jump');
             //event.target.classList.remove('flip');
             this.#tootEvent(res)
@@ -301,6 +305,26 @@ button:focus, button:focus img {
             sessionStorage.setItem(`status`, this.#getStatus());
             tooter.authorize(app.client_id)
         }
+    }
+    async #requestWebmention(json) { // json: toot応答
+        const url = 'https://webmention.io/aaronpk/webmention'
+        const params = new URLSearchParams();
+        params.set('source', json.url) // トゥートのURL。https://pawoo.net/web/statuses/108412336135014487 など
+        params.set('target', location.href) // コメントを表示するサイトのURL。https://ytyaru.github.io/ など
+        const body = params.toString()
+        const datas = {
+            method: 'POST',
+            headers: {'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
+            body: body,
+        }
+        console.debug(url)
+        console.debug(params)
+        console.debug(datas)
+        const res = await fetch(url, datas)
+        console.debug(res)
+        const j = await res.json()
+        console.debug(j)
+        return j
     }
     #toast(message, error=false) {
         console.debug(message)
