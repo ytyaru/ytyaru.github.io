@@ -180,7 +180,7 @@ class WebMention {
         this.rsvp = rsvp
         this.bugIso = new BugIsoEscape()
         this.API_URL = 'https://webmention.io/api/mentions.jf2'
-        this._addressRegExp = /[a-zA-Z]{35,}/
+        this._addressRegExp = /[a-zA-Z0-9]{34,}/g
     }
     async make() {
         this.dateDiff.Base = new Date()
