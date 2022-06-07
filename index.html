@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="./css/styles.css">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" type="text/css" href="./lib/toastify/1.11.2/min.css">
-<link rel="stylesheet" type="text/css" href="css/toastify.css">
+<!--<link rel="stylesheet" type="text/css" href="css/toastify.css">-->
 <script type="text/javascript" src="./lib/toastify/1.11.2/min.js"></script>
 <script src="./lib/tingle/0.16.0/tingle.js"></script>
 <link rel="stylesheet" href="./lib/tingle/0.16.0/tingle.css">
@@ -31,9 +31,9 @@
 <script src="js/toot-button.js"></script>
 <script src="js/toot-dialog.js"></script>
 <script src="js/tweet-button.js"></script>
-<script src="./js/comment.js"></script>
-<script src="./js/web-mention.js"></script>
-<script src="./js/main.js"></script>
+<script src="js/comment.js"></script>
+<script src="js/mention-section.js"></script>
+<script src="js/main.js"></script>
 <script type="application/ld+json">
   {
     "@context": "https://schema.org/",
@@ -53,7 +53,7 @@
         "https://web3.askmona.org/user/1590",
       ]
     },
-    "dateModified": "2022-05-22T21:58:05+09:00",
+    "dateModified": "2022-06-07T15:27:00+09:00",
     "datePublished": "2022-05-22T21:58:05+09:00",
     "headline": "ytyaruのプロフィール",
     "image": ["https://ytyaru.github.io/asset/image/avator.png"]
@@ -120,41 +120,9 @@
 <li><a href=""></a></li>
 -->
 </ul>
-
-<!--
-<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-text="いいね！" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
--->
 <tweet-button text="いいね！\n"></tweet-button>
 <toot-dialog domain="mstdn.jp pawoo.net" status="いいね！"></toot-dialog>
-<!--
-<span id="web-mention-count"></span><span id="web-mention-hart"></span><span id="web-mention-bookmark"></span>
-<div id="web-mention-comment"></div>
--->
-<div id="web-mention-counts">
-    <span id="web-mention-count"></span>
-    <div id="web-mention-like" title="いいね！">
-        <span id="web-mention-like-icon">♥</span>
-        <span id="web-mention-like-count">0</span>
-        <span id="web-mention-like-author"></span>
-    </div>
-    <div id="web-mention-bookmark" title="ブックマーク">
-        <span id="web-mention-bookmark-icon">🔖</span>
-        <span id="web-mention-bookmark-count">0</span>
-        <span id="web-mention-bookmark-author"></span>
-    </div>
-    <div id="web-mention-rsvp" title="出欠確認">
-        <span id="web-mention-rsvp-icon">📅</span>
-        <span id="web-mention-rsvp-count">0</span>
-        <span id="web-mention-rsvp-author"></span>
-    </div>
-</div>
-<div id="web-mention-comment"></div>
-
-<!--
-<span id="web-mention-count"></span><span id="web-mention-hart"></span><span id="web-mention-bookmark"></span>
-<div id="web-mention-comment"></div>
--->
-
+<mention-section></mention-section>
 </div>
 
 <div id="content-right">

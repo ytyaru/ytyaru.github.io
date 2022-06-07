@@ -1,3 +1,96 @@
+class MentionSection extends HTMLElement {
+    /*
+    <mention-section
+     comment=30
+     like=10
+     bookmark=5
+     rsvp=5
+    ></mention-section>
+    */
+    constructor(domain) {
+        super();
+        this.comment = 30
+        this.like = 10
+        this.bookmark = 5
+        this.rsvp = 5
+    }
+    static get observedAttributes() { return ['comment', 'like', 'bookmark', 'rsvp']; }
+    attributeChangedCallback(property, oldValue, newValue) {
+        if (oldValue === newValue) { return; }
+        else { this[property] = parseInt(newValue); }
+    }
+    async connectedCallback() {
+        //const shadow = this.attachShadow({ mode: 'closed' });
+        const shadow = this.attachShadow({ mode: 'open' }); // マウスイベント登録に必要だった。CSS的にはclosedにしたいのに。
+        const gen = new MentionSectionGenerator()
+        shadow.innerHTML = `<style>${gen.generateCss()}</style>`
+        shadow.innerHTML += gen.generateFrame()
+        console.log(this.shadowRoot)
+        const m = new WebMention(this.shadowRoot, this.comment, this.like, this.bookmark, this.rsvp) 
+        m.make()
+        //shadow.innerHTML = `<style>${this.#cssBase()}</style>${button.outerHTML}`
+    }
+}
+window.addEventListener('DOMContentLoaded', (event) => {
+    customElements.define('mention-section', MentionSection);
+});
+class MentionSectionGenerator {
+    generateCss() { return `
+#web-mention-count {
+    cursor: pointer;
+    text-decoration: underline dotted;
+}
+#web-mention-counts, #web-mention-like, #web-mention-bookmark, #web-mention-rsvp {
+    cursor: pointer;
+    display: inline;
+}
+#web-mention-comment {
+    height: 300px;
+    overflow-y: scroll;
+    border-top: 1px dashed;
+}
+.mention {
+    border-radius: 1em;
+    border-color: #000;
+    border-style: solid; 
+    border-width: 1px; 
+    padding: 0.5em;
+    margin: 0.5em;
+}
+.mention-meta a, .mention-meta img, .mention-meta span {
+    vertical-align: middle;
+}
+.mention-url { text-decoration: none; }
+.tippy-box[data-theme~="custom"] {
+  background-color: #f7f7f7;
+  color: black;
+  border: 1px solid #ededed;
+  border-radius: 0;
+}
+.tippy-arrow { background-color: #f7f7f7; }`
+    }
+    generateFrame() { return `
+<div id="web-mention-counts">
+    <span id="web-mention-count"></span>
+    <div id="web-mention-like" title="いいね！">
+        <span id="web-mention-like-icon">♥</span>
+        <span id="web-mention-like-count">0</span>
+        <span id="web-mention-like-author"></span>
+    </div>
+    <div id="web-mention-bookmark" title="ブックマーク">
+        <span id="web-mention-bookmark-icon">🔖</span>
+        <span id="web-mention-bookmark-count">0</span>
+        <span id="web-mention-bookmark-author"></span>
+    </div>
+    <div id="web-mention-rsvp" title="出欠確認">
+        <span id="web-mention-rsvp-icon">📅</span>
+        <span id="web-mention-rsvp-count">0</span>
+        <span id="web-mention-rsvp-author"></span>
+    </div>
+</div>
+<div id="web-mention-comment"></div>`
+    }
+}
 class DateDiff { // 〜時間前のような表記を生成する
     constructor() { this.base = new Date(); this.elapsed = null; this.iso = null; this.target = null;}
     get Base() { return this.base }
@@ -71,7 +164,10 @@ class BugIsoEscape { // webmentionのJSON応答値にあるpublishedの日時テ
     }
 }
 class WebMention {
-    constructor(per=30) {
+    constructor(shadowRoot, per=30, like=10, bookmark=5, rsvp=5) {
+        this.shadowRoot = shadowRoot
+        console.log(shadowRoot)
+        console.log(this.shadowRoot)
         this.dateDiff = new DateDiff()
         this.target = location.href
         //this.target = `https://ytyaru.github.io/` // デバッグ用
@@ -79,6 +175,9 @@ class WebMention {
         this.per = per
         //this.per = 3 // デバッグ用
         this.page = 0
+        this.like = like
+        this.bookmark = bookmark 
+        this.rsvp = rsvp
         this.bugIso = new BugIsoEscape()
         this.API_URL = 'https://webmention.io/api/mentions.jf2'
     }
@@ -90,11 +189,13 @@ class WebMention {
         this.#addLikeBookmarkRsvpClickEventListener()
     }
     async #count() {
+        console.log(this.shadowRoot)
         const res = await fetch(`https://webmention.io/api/count?target=${this.target}`)
         //this.count = this.#getTestCount()
         this.count = await res.json()
         console.debug(this.count)
-        document.getElementById('web-mention-count').textContent = `${this.count['count']} mensions`
+        //this.shadowRoot.getElementById('web-mention-count').textContent = `${this.count['count']} mensions`
+        this.shadowRoot.querySelector(`#web-mention-count`).textContent = `${this.count['count']} mensions`
         this.#setupTippy()
     }
     #setupTippy() {
@@ -167,13 +268,13 @@ class WebMention {
         console.debug(url)
         const mentions = await this.#request(url)
         console.debug(mentions)
-        document.getElementById('web-mention-comment').innerHTML += mentions.children.filter(child=>child.hasOwnProperty('content')).map(child=>this.#commentTypeA(child)).join('')
+        this.shadowRoot.getElementById('web-mention-comment').innerHTML += mentions.children.filter(child=>child.hasOwnProperty('content')).map(child=>this.#commentTypeA(child)).join('')
     }
     async #likeBookmarkRsvp() {
         const data = new Map()
-        data.set('like', {per:10, wmProperty:'like-of'})
-        data.set('bookmark', {per:5, wmProperty:'bookmark-of'})
-        data.set('rsvp', {per:5, wmProperty:'rsvp'})
+        data.set('like', {per:this.like, wmProperty:'like-of'})
+        data.set('bookmark', {per:this.bookmark, wmProperty:'bookmark-of'})
+        data.set('rsvp', {per:this.rsvp, wmProperty:'rsvp'})
         for (const [key,value] of data.entries()) {
             this.#notHasContents(value.per, value.wmProperty, key)
         }
@@ -182,8 +283,8 @@ class WebMention {
         const url = this.#getRequestUrl(per, 0)
         url.searchParams.set('wm-property', wmProperty);
         const mentions = await this.#request(url)
-        document.getElementById(`web-mention-${id}-count`).innerHTML = (this.count.type.hasOwnProperty(id)) ? this.count.type[id] : 0
-        document.getElementById(`web-mention-${id}-author`).innerHTML += mentions.children.map(child=>this.#author(child.author)).join('')
+        this.shadowRoot.getElementById(`web-mention-${id}-count`).innerHTML = (this.count.type.hasOwnProperty(id)) ? this.count.type[id] : 0
+        this.shadowRoot.getElementById(`web-mention-${id}-author`).innerHTML += mentions.children.map(child=>this.#author(child.author)).join('')
     }
     #author(author, size=32) {
         const name = author.name
@@ -223,7 +324,7 @@ class WebMention {
             document.body.clientHeight, document.documentElement.clientHeight
         );
         const mostBottom = allHeight - window.innerHeight;
-        const dom = document.getElementById('web-mention-comment')
+        const dom = this.shadowRoot.getElementById('web-mention-comment')
         dom.addEventListener('scroll', async()=> {
             const commentsHeight = dom.scrollHeight - dom.clientHeight
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -234,13 +335,13 @@ class WebMention {
         });
     }
     #addLikeBookmarkRsvpClickEventListener() {
-        this.#addNotHasContentTypeClickEventListener('like', 10)
-        this.#addNotHasContentTypeClickEventListener('bookmark', 5)
-        this.#addNotHasContentTypeClickEventListener('rsvp', 5)
+        this.#addNotHasContentTypeClickEventListener('like', this.like)
+        this.#addNotHasContentTypeClickEventListener('bookmark', this.bookmark)
+        this.#addNotHasContentTypeClickEventListener('rsvp', this.rsvp)
     }
     #addNotHasContentTypeClickEventListener(type='like', initCount=10) {
         const self = this
-        const dom = document.getElementById(`web-mention-${type}`)
+        const dom = this.shadowRoot.getElementById(`web-mention-${type}`)
         dom.addEventListener('click', async()=> {
             console.debug(type, initCount)
             const modal = new tingle.modal({
@@ -251,7 +352,7 @@ class WebMention {
                 onOpen: function() { console.debug('modal open'); },
                 onClose: function() { console.debug('modal closed'); },
             });
-            let author = document.getElementById(`web-mention-${type}-author`).innerHTML
+            let author = this.shadowRoot.getElementById(`web-mention-${type}-author`).innerHTML
 
             let rsvpDom = null
             if ('rsvp' === type) { rsvpDom = self.#makeRsvpDialogInnerHtml() }
@@ -260,7 +361,7 @@ class WebMention {
                 if (initCount < self.count.type.like) {
                     const perPage = 100
                     for (let page=0; self.count.type.like<((page+1)*perPage); page++) {
-                        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${self.target}&sort-by=published&sort-dir=down&per-page=${perPage}&page=${page}&wm-property=like-of`)
+                        const res = await fetch(`https://webmention.io/api/mentions.jf2?target=${self.target}&sort-by=published&sort-dir=down&per-page=${perPage}&page=${page}&wm-property=${type}`)
                         const mentions = await res.json()
                         const children = self.#bugIso(mentions)
                         if ('rsvp' === type) { self.#makeRsvpAuthor(rsvpDom, child) }
@@ -271,8 +372,8 @@ class WebMention {
                     }
                 }
             }
-            const icon = document.getElementById(`web-mention-${type}-icon`)
-            const count = document.getElementById(`web-mention-${type}-count`)
+            const icon = this.shadowRoot.getElementById(`web-mention-${type}-icon`)
+            const count = this.shadowRoot.getElementById(`web-mention-${type}-count`)
             modal.setContent(icon.innerHTML + count.innerHTML + author);
             modal.open();
         });
@@ -295,7 +396,7 @@ class WebMention {
     #makeRsvpAuthor(dom, child) {
         const rsvp = child.rsvp.toLowerCase()
         const target = dom.getElementById(`web-mention-rsvp-${rsvp}-author`)
-        if (!target) { target = document.getElementById(`web-mention-rsvp-other-author`) }
+        if (!target) { target = this.shadowRoot.getElementById(`web-mention-rsvp-other-author`) }
         target.innerHTML += this.#author(child.author)
     }
     #getTestChildren() {
