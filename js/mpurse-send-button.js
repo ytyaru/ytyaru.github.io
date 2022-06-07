@@ -6,7 +6,6 @@ class MpurseSendButton extends HTMLElement {
               .on('stateChanged', isUnlocked => this.stateChanged(isUnlocked))
               .on('addressChanged', address => this.addressChanged(address));
         } catch(e) { console.debug(e) }
-        this.address = null
         this.title = '投げモナする'
         this.img = null
         this.imgSrc = null
