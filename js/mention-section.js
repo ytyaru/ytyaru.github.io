@@ -294,7 +294,7 @@ class WebMention {
     }
     #commentTypeA(child) { // 人、日時、コメント（サーバが返すpublished日時テキストが不統一で正しくISO8601でないからバグる！）
         const content = child.content.html || child.content.text
-        return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${child.publishedYmdhms}">${child.publishedElapsed}</span>　<span title="${this.#getMentionTypeName(child)}" class="mention-url"><a href="${child.url}" target="_blank" rel="noopener noreferrer" class="mention-url">${this.#getMentionTypeEmoji(child)}</a></span>　${this.#makeMpurseSendButton(content)}</div><div>${content}</div></div>`
+        return `<div class="mention"><div class="mention-meta">${this.#author(child.author)}　<span title="${child.publishedYmdhms}">${child.publishedElapsed}</span>　<span title="${this.#getMentionTypeName(child)}" class="mention-url"><a href="${child.url}" target="_blank" rel="noopener noreferrer" class="mention-url">${this.#getMentionTypeEmoji(child)}</a></span>　${this.#makeMpurseSendButton(child.content.text)}</div><div>${content}</div></div>`
     }
     #makeMpurseSendButton(content) { // コメント内にアドレスらしき文字列があれば投げモナボタンを配置する
         console.debug(content)
