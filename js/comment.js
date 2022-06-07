@@ -6,9 +6,9 @@ class Comment {
         return `<a href="${url}" title="${name}" target="_blank" rel="noopener noreferrer"><img src="${photo}" alt="${name}" width="${size}" height="${size}"></a>`
     }
     comment(content, author, published, publishedElapsed, mentionTypeName, mentionTypeEmoji, url) { // 人、日時、コメント（サーバが返すpublished日時テキストが不統一で正しくISO8601でないからバグる！）
-        return `<div class="mention"><div class="mention-meta">${author}　<span title="${published}">${publishedElapsed}</span>　<span title="${mentionTypeName}" class="mention-url"><a href="${url}" target="_blank" rel="noopener noreferrer" class="mention-url">${mentionTypeEmoji}</a></span>　${this.makeMpurseSendButton(content)}</div><div>${content}</div></div>`
+        return `<div class="mention"><div class="mention-meta">${author}　<span title="${published}">${publishedElapsed}</span>　<span title="${mentionTypeName}" class="mention-url"><a href="${url}" target="_blank" rel="noopener noreferrer" class="mention-url">${mentionTypeEmoji}</a></span>　${this.#makeMpurseSendButton(content)}</div><div>${content}</div></div>`
     }
-    makeMpurseSendButton(content) { // コメント内にアドレスらしき文字列があれば投げモナボタンを配置する
+    #makeMpurseSendButton(content) { // コメント内にアドレスらしき文字列があれば投げモナボタンを配置する
         console.debug(content)
         console.debug(this._addressRegExp)
         const founds = content.match(this._addressRegExp)

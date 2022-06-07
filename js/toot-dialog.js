@@ -224,7 +224,7 @@ button:focus, button:focus img {
     #addListenerEvent(shadow) { // トゥートボタンを押したときの動作を実装する
         console.debug(this.shadowRoot)
         //this.shadowRoot.getElementById('toot-button').addEventListener('pointerdown', (event) => {
-        this.shadowRoot.getElementById('toot-button').addEventListener('click', (event)=>{ console.debug('click', event.target); this.#show(event.target) });
+        this.shadowRoot.getElementById('toot-button').addEventListener('click', async(event)=>{ console.debug('click', event.target); await this.#show(event.target) });
         /* clickとあわせて２回発行されてしまう！　もうスマホ側は知らん。
         this.shadowRoot.getElementById('toot-button').addEventListener('pointerdown', (event) => {
             // なぜかthis.#show(event.target)だとフォーカスが当たらない。clickなら成功するがpointerdownだと失敗する理由が不明。なのでもうclickイベントを発火させることにした。
@@ -305,13 +305,14 @@ button:focus, button:focus img {
             }
         });
     }
-    #show(target) {
+    async #show(target) {
         target.classList.add('jump');
         //this.shadowRoot.getElementById('toot-dialog').showModal();
         this.shadowRoot.getElementById('toot-dialog').show();
         const status = this.shadowRoot.getElementById('status');
         console.log(this.shadowRoot.querySelector(`toot-button[status]`))
-        status.innerText = (this.shadowRoot.querySelector(`toot-button[status]`)) ? this.shadowRoot.querySelector(`toot-button[status]`).getAttribute('status') : this.status + '\n' + location.href
+        const address = (window.hasOwnProperty('mpurse')) ? await window.mpurse.getAddress() : ''
+        status.innerText = (this.shadowRoot.querySelector(`toot-button[status]`)) ? this.shadowRoot.querySelector(`toot-button[status]`).getAttribute('status') : this.status + '\n' + address + '\n' + location.href
         this.shadowRoot.getElementById('status').dispatchEvent(new Event('input'))
         console.log(this.shadowRoot.getElementById('status-remaining').innerHTML)
         status.focus();
