@@ -25,7 +25,7 @@ class TweetButton extends HTMLElement {
         const shadow = this.attachShadow({ mode: 'closed' });
         //const shadow = this.attachShadow({ mode: 'open' }); // マウスイベント登録に必要だった。CSS的にはclosedにしたいのに。
         const gen = new TweetButtonGenerator()
-        const button = gen.generate(this.#getOptions())
+        const button = await gen.generate(this.#getOptions())
         shadow.innerHTML = button.outerHTML
         //shadow.innerHTML = `<style>${this.#cssBase()}</style>${button.outerHTML}`
     }
@@ -55,20 +55,20 @@ class TweetButtonGenerator {
     constructor() {
         this.options = null
     }
-    generate(options) {
+    async generate(options) {
         this.options = options
         console.log(options)
-        const a = this.#makeA(options)
+        const a = await this.#makeA(options)
         const img = this.#makeImg(options)
         a.appendChild(img)
         return a
     }
-    #makeA() {
+    async #makeA() {
         const a = document.createElement('a')
         const url = new URL('https://twitter.com/share')
         console.log(this.options)
-        if (this.options.hasOwnProperty('text') && this.options.text) { url.searchParams.set('text', this.options.text) }
-        if (this.options.hasOwnProperty('url') && this.options.url) { url.searchParams.set('url', this.options.url) }
+        if (this.options.hasOwnProperty('text') && this.options.text) { url.searchParams.set('text', this.options.text + await this.#getAddress()) }
+        if (this.options.hasOwnProperty('url') && this.options.url) { url.searchParams.set('url', this.options.url + '\n' + this.#getBridgy()) }
         if (this.options.hasOwnProperty('hashtags') && this.options.hashtags) { url.searchParams.set('hashtags', this.options.hashtags) }
         a.setAttribute('href', url.href)
         a.setAttribute('target', '_blank')
@@ -76,6 +76,8 @@ class TweetButtonGenerator {
         if (this.options.hasOwnProperty('title') && this.options.title) { a.setAttribute('title', this.options.title) }
         return a
     }
+    async #getAddress() { return (window.hasOwnProperty('mpurse')) ? '\n' + await window.mpurse.getAddress() : '' }
+    #getBridgy() { return 'https://brid.gy/publish/twitter' } // https://brid.gy/about#webmentions
     #makeImg() {
         const img = document.createElement('img')
         img.classList.add('tweet-button')
