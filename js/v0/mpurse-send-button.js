@@ -105,19 +105,11 @@ class MpurseSendButton extends HTMLElement {
         this.addEventListener('click', async(event) => {
             console.debug(`クリックしました。\n宛先：${to}\n金額：${amount} ${asset}\nメモ：${memo}`)
             const txHash = await window.mpurse.sendAsset(to, asset, amount, memoType, memo).catch((e) => this.ngMsg);
-            if (!txHash || txHash === this.ngMsg) { Toaster.toast(this.ngMsg, true); }
+            if (txHash === this.ngMsg) { console.debug(this.ngMsg); alert(this.ngMsg); }
             else {
                 console.debug(txHash)
                 console.debug(`送金しました。\ntxHash: ${txHash}\n宛先：${to}\n金額：${amount} ${asset}\nメモ：${memo}`)
-                if (party) {
-                    party.confetti(event.target,{
-                        lifetime: party.variation.range(5, 7),
-                        count: party.variation.range(80, 100),
-                        speed: party.variation.range(100, 700),
-                        //size: party.variation.range(1, 3),
-                    })
-                }
-                Toaster.toast(this.okMsg);
+                alert(this.okMsg)
             }
         });
     }

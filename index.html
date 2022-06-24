@@ -25,8 +25,10 @@
 <link rel="stylesheet" type="text/css" href="./lib/toastify/1.11.2/min.css">
 <!--<link rel="stylesheet" type="text/css" href="css/toastify.css">-->
 <script type="text/javascript" src="./lib/toastify/1.11.2/min.js"></script>
-<script src="./lib/tingle/0.16.0/tingle.js"></script>
+<script src="lib/tingle/0.16.0/tingle.js"></script>
 <link rel="stylesheet" href="./lib/tingle/0.16.0/tingle.css">
+<script src="lib/party/party.min.js"></script>
+<!--
 <script src="js/tooter.js"></script>
 <script src="js/toot-button.js"></script>
 <script src="js/toot-dialog.js"></script>
@@ -34,6 +36,42 @@
 <script src="js/comment.js"></script>
 <script src="js/mention-section.js"></script>
 <script src="js/mpurse-send-button.js"></script>
+-->
+<script src="js/toaster.js"></script>
+<script src="js/rest-client.js"></script>
+<script src="js/misskey-rest-client.js"></script>
+<script src="js/misskey-instance.js"></script>
+<script src="js/misskey-authorizer.js"></script>
+<script src="js/misskey-authorizer-oauth.js"></script>
+<script src="js/misskey-authorizer-miauth.js"></script>
+<script src="js/misskey-api-client.js"></script>
+<script src="js/misskey-note-button.js"></script>
+<script src="js/misskey-note-dialog.js"></script>
+<script src="js/webmention-requester.js"></script>
+<script src="js/mastodon-rest-client.js"></script>
+<script src="js/mastodon-authorizer.js"></script>
+<script src="js/mastodon-api-client.js"></script>
+<script src="js/toot-button.js"></script>
+<script src="js/toot-dialog.js"></script>
+<script src="js/comment.js"></script>
+<script src="js/tweet-button.js"></script>
+<script src="js/mention-section.js"></script>
+<script src="js/mpurse-send-button.js"></script>
+<script src="js/mastodon-instance.js"></script>
+<script src="js/mastodon-profile-generator.js"></script>
+<script src="js/misskey-profile-generator.js"></script>
+<script src="js/mastodon-redirect-callback-reciver.js"></script>
+<script src="js/misskey-redirect-callback-reciver.js"></script>
+
+<!--
+<script src="js/profile-register.js"></script>
+<script src="js/google-apps-script-client.js"></script>
+<script src="js/profile-generator.js"></script>
+<script src="js/mona-transaction-client.js"></script>
+<script src="js/mona-transaction-viewer.js"></script>
+<script src="js/circle-svg-generator.js"></script>
+-->
+
 <script src="js/main.js"></script>
 <script type="application/ld+json">
   {
@@ -121,13 +159,33 @@
 <li><a href="https://ytyaru.github.io/Html.Tweet.Button.WebComponent.20220607091729/">ツイートボタン・ジェネレータ（WebComponent版）を作った</a></li>
 <li><a href="https://ytyaru.github.io/Html.Webmention.WebComponent.20220607141057/">WebmentionをWebComponent化した。コメントで投げモナボタンを表示するようにした。</a></li>
 <li><a href="https://github.com/ytyaru/Python.Webmention.io.Backup.20220604133640">Webmentionバックアップツール（Python製）</a></li>
+<li><a href="https://ytyaru.github.io/">コメントで投げモナボタンを出す！</a></li>
+<li><a href="https://ytyaru.github.io/Html.Misskey.Note.Button.Dialog.WebComponent.Webmention.20220609193648/">MisskeyでノートしてWebmentionで受信するページを作った</a></li>
+<li><a href="https://ytyaru.github.io/Html.Mastodon.Account.Info.20220611094830/">マストドンAPIでユーザのプロフィール情報を取得する</a></li>
+<li><a href="https://ytyaru.github.io/Html.Misskey.Account.Info.20220611155603/">misskeyのプロフィールから投げモナボタンを作る</a></li>
+<li><a href="https://ytyaru.github.io/Html.Mastodon.RedirectCallback.Event.20220612141935/">トゥートボタンの認証リダイレクト処理をイベント化した。</a></li>
+<li><a href="https://ytyaru.github.io/Html.Misskey.RedirectCallback.Event.20220612182913/">Misskeyのノート投稿とプロフィール取得を共存させた</a></li>
+<li><a href="https://ytyaru.github.io/Html.Mpurse.SignMessage.20220614104518/">mpurseのsignMessageを試すだけのページを作った。</a></li>
+<li><a href="https://ytyaru.github.io/Html.GAS.Address.From.Profile.20220616091305/">mpurseアドレスとプロフィール情報を登録するページを作った。</a></li>
+<li><a href="https://ytyaru.github.io/Html.GAS.Mastodon.Misskey.Address.Profile.20220620171245/">mpurseアドレスとプロフィール情報を登録するページ２</a></li>
+<li><a href="https://ytyaru.github.io/Html.Mona.Transaction.Viewer.20220620152433/">モナコイン取引を集計しプロフィール情報も表示するページを作った。</a></li>
 <!--
 <li><a href=""></a></li>
 -->
 </ul>
+<!--
 <tweet-button text="いいね！\n"></tweet-button>
 <toot-dialog domain="mstdn.jp pawoo.net" status="いいね！"></toot-dialog>
 <mention-section></mention-section>
+-->
+<!--
+<footer><a href="https://ytyaru.github.io/" title="著者" target="_blank" rel="noopener noreferrer"><img src="./asset/image/avator.png" width="64" height="64">ytyaru</a><mpurse-send-button to="MEHCqJbgiNERCH3bRAtNSSD9uxPViEX1nu" img="coin-monar"></mpurse-send-button><a href="https://ytyaru.github.io/Html.Mpurse.Api.20220517160403/setup.html" title="モナコインを使うには">？</a></footer>
+-->
+<tweet-button text="いいね！\n"></tweet-button>
+<toot-dialog domain="mstdn.jp pawoo.net fedibird.com mastodon.social" status="いいね！"></toot-dialog>
+<misskey-note-dialog domain="misskey.io misskey.dev sushi.ski meisskey.one" status="いいね！"></misskey-note-dialog>
+<mention-section></mention-section>
+
 </div>
 
 <div id="content-right">

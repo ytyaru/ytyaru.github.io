@@ -8,6 +8,21 @@ class Comment {
     comment(content, author, published, publishedElapsed, mentionTypeName, mentionTypeEmoji, url) { // 人、日時、コメント（サーバが返すpublished日時テキストが不統一で正しくISO8601でないからバグる！）
         return `<div class="mention"><div class="mention-meta">${author}　<span title="${published}">${publishedElapsed}</span>　<span title="${mentionTypeName}" class="mention-url"><a href="${url}" target="_blank" rel="noopener noreferrer" class="mention-url">${mentionTypeEmoji}</a></span>　${this.#makeMpurseSendButton(content)}</div><div>${content}</div></div>`
     }
+    #getAddressFromToot(json) {
+        let founds = json.account.note.match(this._addressRegExp)
+        if (founds) { return founds[0] }
+        if (json.account.hasOwnProperty('fields')) {
+            for (const field of json.account.fields) {
+                if ('モナコイン' == field.name || 'MONACOIN' == field.name.toUpperCase()) {
+                    founds = field.value.match(this._addressRegExp)
+                    if (founds) { return founds[0] }
+                }
+            }
+        }
+        founds = json.content.match(this._addressRegExp)
+        if (founds) { return founds[0] }
+        return null
+    }
     #makeMpurseSendButton(content) { // コメント内にアドレスらしき文字列があれば投げモナボタンを配置する
         console.debug(content)
         console.debug(this._addressRegExp)

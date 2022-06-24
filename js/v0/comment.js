@@ -35,24 +35,5 @@ class Comment {
             json.url,
         )
     }
-    misskeyResToComment(json, domain) {
-        const author = this.author(
-            `https://${domain}/@${json.user.username}`,
-            json.user.name || json.user.username,
-            json.user.avatarUrl,
-            32,
-        )
-        const url = `https://${domain}/notes/${json.id}`
-        const content = document.createElement('div')
-        content.innerHTML = json.text
-        const publishedDate = new Date(Date.parse(json.createdAt))
-        return this.comment(
-            content.innerText,
-            author,
-            DateDiff.toIso(publishedDate),
-            DateDiff.toElapsed(publishedDate),
-            '言及', '＠', 
-            url,
-        )
-    }
+
 }
